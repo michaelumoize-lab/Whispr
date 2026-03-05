@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { MessageCircle, Menu, X, LogOut, User, Settings, LayoutDashboard } from "lucide-react";
-import ModeToggle from "@/components/mode-toggle";
+import ModeToggle from "@/components/ModeToggle";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
