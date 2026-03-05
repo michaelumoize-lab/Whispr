@@ -14,7 +14,7 @@ import { Eye, EyeOff, Loader2, ArrowLeft } from "lucide-react";
 const signUpSchema = z
   .object({
     name: z.string().min(1, { message: "Name is required" }),
-    email: z.email({ message: "Please enter a valid email" }),
+    email: z.string().email({ message: "Please enter a valid email" }),
     password: passwordSchema,
     passwordConfirmation: z
       .string()
@@ -48,25 +48,34 @@ export function SignUpForm() {
 
   async function onSubmit(data: SignUpValues) {
     setError(null);
-    const { error } = await authClient.signUp.email({
-      email: data.email,
-      password: data.password,
-      name: data.name,
-      callbackURL: "/dashboard",
-    });
+    const toastId = toast.loading("Creating your account...");
 
-    if (error) {
-      setError(error.message || "Something went wrong");
-    } else {
-      toast.success("Account created successfully!");
-      router.push("/dashboard");
+    try {
+      const { error } = await authClient.signUp.email({
+        email: data.email,
+        password: data.password,
+        name: data.name,
+        callbackURL: "/dashboard",
+      });
+
+      if (error) {
+        const message = error.message || "Failed to create account";
+        setError(message);
+        toast.error(message, { id: toastId });
+      } else {
+        toast.success("Account created successfully!", { id: toastId });
+        router.push("/dashboard");
+        router.refresh();
+      }
+    } catch (err) {
+      toast.error("An unexpected error occurred", { id: toastId });
+      console.error(err);
     }
   }
 
   return (
     <div className="w-full max-w-md bg-card text-card-foreground rounded-xl border border-border shadow-lg p-6 md:p-8">
       <div className="mb-8 space-y-2">
-        {/* Back Button */}
         <Link
           href="/"
           className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors mb-2"
@@ -76,20 +85,18 @@ export function SignUpForm() {
         </Link>
         <h1 className="text-2xl font-bold tracking-tight">Sign Up</h1>
         <p className="text-sm text-muted-foreground">
-          Enter your information to create your personal study vault.
+          Enter your information to create your personal Whispr profile.
         </p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         {/* Name Field */}
         <div className="space-y-2">
-          <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-            Full Name
-          </label>
+          <label className="text-sm font-medium leading-none">Full Name</label>
           <input
             {...register("name")}
             placeholder="John Doe"
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
           {errors.name && (
             <p className="text-xs text-destructive">{errors.name.message}</p>
@@ -154,7 +161,7 @@ export function SignUpForm() {
         </div>
 
         {error && (
-          <div className="p-3 rounded-md bg-destructive/10 text-destructive text-sm font-medium">
+          <div className="p-3 rounded-md bg-destructive/10 text-destructive text-sm font-medium animate-in fade-in zoom-in duration-200">
             {error}
           </div>
         )}
@@ -165,7 +172,7 @@ export function SignUpForm() {
           className="inline-flex items-center justify-center w-full h-10 px-4 py-2 bg-primary text-primary-foreground font-bold rounded-md hover:opacity-90 transition-all active:scale-[0.98] disabled:opacity-50"
         >
           {isSubmitting ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
             "Create an account"
           )}

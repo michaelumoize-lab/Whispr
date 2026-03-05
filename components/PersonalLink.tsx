@@ -15,11 +15,11 @@ export default function PersonalLink({ link }: PersonalLinkProps) {
   };
 
   return (
-    <div className="flex justify-between items-center bg-card p-4 rounded-xl border border-border shadow-sm">
-      <p className="truncate">{link}</p>
+    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 bg-card p-4 rounded-xl border border-border shadow-sm">
+      <p className="w-full min-w-0 break-all text-sm sm:text-base">{link}</p>
       <button
         onClick={handleCopy}
-        className="flex items-center gap-2 px-3 py-1 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition"
+        className="flex shrink-0 items-center justify-center gap-2 px-3 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition"
       >
         Copy <ClipboardCopy className="w-4 h-4" />
       </button>

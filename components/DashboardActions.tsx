@@ -42,11 +42,11 @@ export default function DashboardActions({ link }: { link: string }) {
   };
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex w-full md:w-auto flex-col sm:flex-row items-stretch sm:items-center gap-3">
       <button
         onClick={handleRefresh}
         disabled={isRefreshing}
-        className="flex items-center gap-2 px-4 py-2 text-sm font-medium border border-border rounded-full hover:bg-accent transition disabled:opacity-50"
+        className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium border border-border rounded-full hover:bg-accent transition disabled:opacity-50"
       >
         <RefreshCw size={16} className={isRefreshing ? "animate-spin" : ""} />
         Sync
@@ -54,7 +54,7 @@ export default function DashboardActions({ link }: { link: string }) {
 
       <button
         onClick={handleShare}
-        className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-full hover:opacity-90 transition shadow-sm"
+        className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-full hover:opacity-90 transition shadow-sm"
       >
         {copied ? <Check size={16} /> : <Share2 size={16} />}
         {copied ? "Copied" : "Share Link"}
