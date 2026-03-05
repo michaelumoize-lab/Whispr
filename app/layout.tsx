@@ -29,7 +29,7 @@ export default function RootLayout({
       >
         <Toaster />
         <ThemeProvider>
-          <main className="px-6 md:px-8 lg:px-12 py-6">
+          <main className="overflow-x-hidden px-4 sm:px-6 md:px-8 lg:px-12 py-4 sm:py-6">
             {children}
           </main>
         </ThemeProvider>

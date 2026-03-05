@@ -40,10 +40,10 @@ export default async function DashboardPage() {
   const personalLink = `${process.env.NEXT_PUBLIC_APP_URL}/whispr/${userId}`;
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8 p-6">
+    <div className="max-w-5xl mx-auto space-y-6 sm:space-y-8 px-0 sm:px-2 md:px-4">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-6">
         <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">Dashboard</h1>
           <p className="text-muted-foreground text-sm">Manage your anonymous messages.</p>
         </div>
         <DashboardActions link={personalLink} />

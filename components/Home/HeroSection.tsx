@@ -11,8 +11,8 @@ const HeroSection = () => {
         <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-primary/5 rounded-full blur-[100px]" />
       </div>
 
-      <div className="container mx-auto px-6">
-        <div className="flex flex-col items-center text-center mb-16">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="flex flex-col items-center text-center mb-12 sm:mb-16">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent border border-primary/20 text-accent-foreground text-sm font-medium mb-6 animate-fade-in">
             <span className="relative flex h-2 w-2">
@@ -22,24 +22,25 @@ const HeroSection = () => {
             Anonymous Messaging Active
           </div>
 
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight text-foreground max-w-4xl leading-[1.1]">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight text-foreground max-w-4xl leading-[1.1]">
             Receive Honest Feedback. <br />
             <span className="text-primary">Stay Completely Anonymous.</span>
           </h1>
 
-          <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl">
+          <p className="mt-6 text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl">
             Share your personal link with friends, followers, or the public. They can send messages 
             anonymously, while only you can view them in your private dashboard.
           </p>
 
-          <div className="mt-10 flex flex-col sm:flex-row gap-4">
-          <Link href="/dashboard">
-            <button className="px-8 py-4 bg-primary text-primary-foreground rounded-lg font-semibold shadow-lg shadow-primary/20 hover:opacity-90 transition-all flex items-center justify-center gap-2 group">
+          <div className="mt-10 flex w-full sm:w-auto flex-col sm:flex-row gap-4">
+            <Link
+              href="/dashboard"
+              className="group flex w-full sm:w-auto items-center justify-center gap-2 rounded-lg bg-primary px-8 py-4 font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:opacity-90"
+            >
               Get Your Link
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </button>
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
-            <button className="px-8 py-4 bg-secondary text-secondary-foreground border border-border rounded-lg font-semibold hover:bg-muted transition-all">
+            <button className="w-full sm:w-auto px-8 py-4 bg-secondary text-secondary-foreground border border-border rounded-lg font-semibold hover:bg-muted transition-all">
               See How It Works
             </button>
           </div>
@@ -48,8 +49,8 @@ const HeroSection = () => {
         {/* Visual Mockup Section */}
         <div className="relative max-w-6xl mx-auto">
           {/* Main "Dashboard" Glass Card */}
-          <div className="bg-card/50 backdrop-blur-xl border border-border rounded-2xl shadow-2xl p-4 md:p-8 relative z-10">
-            <div className="grid grid-cols-12 gap-6 items-center">
+          <div className="bg-card/50 backdrop-blur-xl border border-border rounded-2xl shadow-2xl p-3 sm:p-4 md:p-8 relative z-10">
+            <div className="grid grid-cols-12 gap-4 sm:gap-6 items-center">
 
               {/* Left Side: Mock Anonymous Messages */}
               <div className="col-span-12 lg:col-span-7 space-y-4">

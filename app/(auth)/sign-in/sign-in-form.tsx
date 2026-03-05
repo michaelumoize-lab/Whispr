@@ -12,7 +12,7 @@ import { Eye, EyeOff, Loader2, ArrowLeft } from "lucide-react";
 import { GoogleIcon } from "@/components/icons/GoogleIcon";
 
 const signInSchema = z.object({
-  email: z.email({ message: "Please enter a valid email" }),
+  email: z.string().email({ message: "Please enter a valid email" }),
   password: z.string().min(1, { message: "Password is required" }),
   rememberMe: z.boolean().optional(),
 });
@@ -46,36 +46,51 @@ export function SignInForm() {
 
   async function onSubmit(data: SignInValues) {
     setError(null);
-    const { error } = await authClient.signIn.email({
-      email: data.email,
-      password: data.password,
-      rememberMe: data.rememberMe,
-    });
+    const toastId = toast.loading("Signing you in...");
 
-    if (error) {
-      setError(error.message || "Something went wrong");
-    } else {
-      toast.success("Signed in successfully");
-      router.push(redirect ?? "/dashboard");
+    try {
+      const { error } = await authClient.signIn.email({
+        email: data.email,
+        password: data.password,
+        rememberMe: data.rememberMe,
+      });
+
+      if (error) {
+        const message = error.message || "Invalid email or password";
+        setError(message);
+        toast.error(message, { id: toastId });
+      } else {
+        toast.success("Welcome back!", { id: toastId });
+        router.push(redirect ?? "/dashboard");
+        router.refresh(); // Ensure session state is updated
+      }
+    } catch (err) {
+      toast.error("An unexpected error occurred", { id: toastId });
+      console.error(err);
     }
   }
 
   async function handleSocialSignIn(provider: "google" | "github") {
     setError(null);
+    
     const { error } = await authClient.signIn.social({
       provider,
       callbackURL: redirect ?? "/dashboard",
     });
 
     if (error) {
-      setError(error.message || "Something went wrong");
+      // Don't show toast if user just closed the popup
+      if (error.message !== "User cancelled") {
+        const message = error.message || `Failed to sign in with ${provider}`;
+        setError(message);
+        toast.error(message);
+      }
     }
   }
 
   return (
     <div className="w-full max-w-md bg-card text-card-foreground rounded-xl border border-border shadow-lg p-6 md:p-8">
       <div className="mb-8 space-y-2">
-        {/* Back Button */}
         <Link
           href="/"
           className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors mb-2"
@@ -93,7 +108,6 @@ export function SignInForm() {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-        {/* Email Field */}
         <div className="space-y-2">
           <label className="text-sm font-medium leading-none">
             Email Address
@@ -109,7 +123,6 @@ export function SignInForm() {
           )}
         </div>
 
-        {/* Password Field */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <label className="text-sm font-medium leading-none">Password</label>
@@ -136,7 +149,6 @@ export function SignInForm() {
           )}
         </div>
 
-        {/* Remember Me Checkbox */}
         <div className="flex items-center gap-2">
           <input
             type="checkbox"
@@ -154,7 +166,7 @@ export function SignInForm() {
         </div>
 
         {error && (
-          <div className="p-3 rounded-md bg-destructive/10 text-destructive text-sm font-medium">
+          <div className="p-3 rounded-md bg-destructive/10 text-destructive text-sm font-medium animate-in fade-in zoom-in duration-200">
             {error}
           </div>
         )}
@@ -162,10 +174,10 @@ export function SignInForm() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="inline-flex items-center justify-center w-full h-10 px-4 py-2 bg-background border border-input text-foreground font-medium rounded-md hover:bg-muted transition-colors disabled:opacity-50 gap-2"
+          className="inline-flex items-center justify-center w-full h-10 px-4 py-2 bg-primary text-primary-foreground font-medium rounded-md hover:opacity-90 transition-all disabled:opacity-50 gap-2"
         >
           {isSubmitting ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
             "Login"
           )}

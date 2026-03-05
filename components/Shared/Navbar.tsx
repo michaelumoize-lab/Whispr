@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { MessageCircle, Menu, X, LogOut, User, Settings, LayoutDashboard } from "lucide-react";
+import { MessageCircle, Menu, X, LogOut, LayoutDashboard } from "lucide-react";
 import ModeToggle from "@/components/ModeToggle";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
@@ -50,13 +50,13 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-4 z-[100] mx-auto flex w-[95%] max-w-5xl items-center justify-between px-6 py-4 bg-card/70 backdrop-blur-xl text-foreground border border-border/50 shadow-lg rounded-full transition-all duration-300">
+    <header className="sticky top-3 sm:top-4 z-[100] mx-auto flex w-[95%] max-w-5xl items-center justify-between px-3 sm:px-6 py-3 sm:py-4 bg-card/70 backdrop-blur-xl text-foreground border border-border/50 shadow-lg rounded-full transition-all duration-300">
       {/* Logo */}
-      <Link href="/" className="flex items-center gap-2 shrink-0">
+      <Link href="/" className="flex items-center gap-2 shrink-0 min-w-0">
         <div className="bg-primary p-1.5 rounded-lg">
           <MessageCircle className="w-5 h-5 text-primary-foreground" />
         </div>
-        <span className="font-bold text-lg tracking-tight">Whispr</span>
+        <span className="font-bold text-base sm:text-lg tracking-tight truncate">Whispr</span>
       </Link>
 
       {/* Right Section */}
@@ -130,7 +130,7 @@ export default function Navbar() {
         <div className="fixed inset-0 bg-background/60 backdrop-blur-sm z-[150] animate-in fade-in duration-300">
           <div 
             ref={menuRef}
-            className="absolute top-4 right-4 w-[280px] bg-card border border-border rounded-[2rem] shadow-2xl p-6 animate-in slide-in-from-top-4 duration-300"
+            className="absolute top-4 right-4 w-[calc(100%-2rem)] max-w-[280px] bg-card border border-border rounded-[2rem] shadow-2xl p-5 sm:p-6 animate-in slide-in-from-top-4 duration-300"
           >
             <div className="flex justify-between items-center mb-8">
                <span className="font-bold text-lg px-2">Menu</span>
@@ -181,7 +181,7 @@ export default function Navbar() {
                 </>
               ) : (
                 <Link
-                  href="/sign-up"
+                  href="/sign-in"
                   onClick={() => setMobileOpen(false)}
                   className="flex items-center justify-center w-full bg-primary text-primary-foreground py-3 rounded-xl font-bold shadow-lg shadow-primary/20"
                 >
