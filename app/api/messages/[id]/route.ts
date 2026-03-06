@@ -1,29 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
-import { connectDB } from "@/database/mongodb";
 import { Message } from "@/database/models/Message";
 import { getServerSession } from "@/lib/get-session";
+import mongoose from "mongoose";
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> } // 1. Define params as a Promise
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await connectDB();
-
-    // 2. Await the params to get the actual ID string
-    const { id } = await params;
-
-    // 3. Check if user is logged in
     const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // 4. Delete the message
-    // We verify recipientId to ensure users can ONLY delete messages sent to them
+    const { id } = await params;
+    const userId = session.user.id;
+
+    // Validate ID format before querying DB
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json({ error: "Invalid ID format" }, { status: 400 });
+    }
+
+    // Atomic operation: ensures the message exists AND belongs to the user
     const deletedMessage = await Message.findOneAndDelete({
       _id: id,
-      recipientId: session.user.id,
+      recipientId: userId,
     });
 
     if (!deletedMessage) {
@@ -35,7 +36,10 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Delete Error:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    console.error("DELETE_ERROR:", error);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }

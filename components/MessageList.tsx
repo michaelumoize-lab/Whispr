@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import MessageCard from "@/components/MessageCard";
 import { Inbox } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 interface Message {
   _id: string;
@@ -16,13 +17,47 @@ interface Props {
 
 export default function MessageList({ messages }: Props) {
   const [messageList, setMessageList] = useState<Message[]>(messages);
+  // Track IDs currently being deleted to prevent double-firing
+  const deletingIds = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     setMessageList(messages);
   }, [messages]);
 
-  const handleDelete = (id: string) => {
+ const handleDelete = async (id: string) => {
+    if (deletingIds.current.has(id)) return;
+    deletingIds.current.add(id);
+
+    const originalList = [...messageList];
     setMessageList((prev) => prev.filter((msg) => msg._id !== id));
+
+    try {
+      const response = await fetch(`/api/messages/${id}`, {
+        method: "DELETE",
+      });
+
+      // 1. Get the data once here
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("Message deleted");
+      } else {
+        // 2. Use the status and the already-parsed data
+        if (response.status === 404) {
+          // It's already gone from the DB, so we stay optimistic
+          toast.success("Message deleted"); 
+        } else {
+          setMessageList(originalList);
+          toast.error(data.error || "Failed to delete");
+        }
+      }
+    } catch (error) {
+      console.error("Delete error:", error);
+      setMessageList(originalList);
+      toast.error("Check your internet connection.");
+    } finally {
+      deletingIds.current.delete(id);
+    }
   };
 
   return (
@@ -33,7 +68,8 @@ export default function MessageList({ messages }: Props) {
           Your Whispers
         </h2>
         <span className="w-fit rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground shadow-sm">
-          {messageList.length} {messageList.length === 1 ? "Message" : "Messages"}
+          {messageList.length}{" "}
+          {messageList.length === 1 ? "Message" : "Messages"}
         </span>
       </div>
 
@@ -50,8 +86,16 @@ export default function MessageList({ messages }: Props) {
       ) : (
         <div className="grid gap-4">
           {messageList.map((msg) => (
-            <div key={msg._id} className="transition-all duration-300 ease-in-out">
-              <MessageCard id={msg._id} text={msg.text} createdAt={msg.createdAt} onDelete={handleDelete} />
+            <div
+              key={msg._id}
+              className="transition-all duration-300 ease-in-out"
+            >
+              <MessageCard
+                id={msg._id}
+                text={msg.text}
+                createdAt={msg.createdAt}
+                onDelete={handleDelete}
+              />
             </div>
           ))}
         </div>

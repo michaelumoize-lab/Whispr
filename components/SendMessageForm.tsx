@@ -2,13 +2,15 @@
 
 import { useState } from "react";
 import { Send, Loader2 } from "lucide-react";
-import { toast } from "react-hot-toast"; // Assuming you use sonner for notifications
+import { toast } from "react-hot-toast"; 
 
 export default function SendMessageForm({ recipientId }: { recipientId: string }) {
   const [text, setText] = useState("");
   const [isSending, setIsSending] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
+
+    // Prevent ]default form submission and reload
     e.preventDefault();
     if (!text.trim()) return;
 
