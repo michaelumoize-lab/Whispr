@@ -37,7 +37,8 @@ export function SignInForm() {
       // Remove error param from URL
       const params = new URLSearchParams(searchParams.toString());
       params.delete("error");
-      window.history.replaceState(null, "", `?${params.toString()}`);
+      const newQuery = params.toString();
+      window.history.replaceState(null, "", newQuery ? `?${newQuery}` : window.location.pathname);
     }
   }, [errorParam, searchParams]);
 

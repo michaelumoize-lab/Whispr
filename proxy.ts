@@ -1,4 +1,4 @@
-// middleware.ts
+// proxyS.ts
 import { NextResponse, type NextRequest } from "next/server";
 import { getServerSession } from "./lib/get-session";
 

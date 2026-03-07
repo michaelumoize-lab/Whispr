@@ -13,6 +13,7 @@
     "@hookform/resolvers": "^5.2.2",
     "better-auth": "^1.5.3",
     "clsx": "^2.1.1",
+    "framer-motion": "^12.35.0",
     "lucide-react": "^0.577.0",
     "mongodb": "^7.1.0",
     "mongoose": "^9.2.4",

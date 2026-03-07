@@ -4,11 +4,13 @@ const MessageSchema = new mongoose.Schema(
   {
     recipientId: { 
       type: String, 
-      required: true 
+      required: true,
+      index: true
     },
     text: { 
       type: String, 
-      required: true 
+      required: true,
+      trim: true
     },
   },
   { 

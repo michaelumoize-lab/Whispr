@@ -9,10 +9,8 @@ export default function SendMessageForm({ recipientId }: { recipientId: string }
   const [isSending, setIsSending] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
-
-    // Prevent ]default form submission and reload
-    e.preventDefault();
-    if (!text.trim()) return;
+    // Prevent default form submission and reload
+    e.preventDefault();    if (!text.trim()) return;
 
     setIsSending(true);
     try {

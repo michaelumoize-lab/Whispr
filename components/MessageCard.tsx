@@ -1,6 +1,7 @@
 "use client";
 
 import { Trash2 } from "lucide-react";
+import { AnimatePresence } from "framer-motion";
 
 interface MessageCardProps {
   id: string;
@@ -16,6 +17,7 @@ export default function MessageCard({
   onDelete,
 }: MessageCardProps) {
   return (
+    <AnimatePresence>
     <div className="bg-card p-4 rounded-xl border border-border shadow-sm flex justify-between items-start gap-3">
       <div className="min-w-0">
         <p className="break-words">{text}</p>
@@ -31,5 +33,6 @@ export default function MessageCard({
         <Trash2 size={16} />
       </button>
     </div>
+    </AnimatePresence>
   );
 }

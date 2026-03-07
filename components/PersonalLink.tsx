@@ -13,16 +13,18 @@ export default function PersonalLink({ link }: PersonalLinkProps) {
 
     const [copied, setCopied] = useState(false);
   
-  const handleCopy = () => {
-    navigator.clipboard.writeText(link);
-    setCopied(true);
-    toast.success("Link copied!");
-
-    setTimeout(() => {
-    setCopied(false);
-  }, 2000);
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopied(true);
+      toast.success("Link copied!");
+      setTimeout(() => {
+        setCopied(false);
+      }, 2000);
+    } catch {
+      toast.error("Failed to copy link");
+    }
   };
-
   return (
     <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 bg-card p-4 rounded-xl border border-border shadow-sm">
       <p className="w-full min-w-0 break-all text-sm sm:text-base">{link}</p>

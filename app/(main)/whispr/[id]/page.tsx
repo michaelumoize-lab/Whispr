@@ -1,16 +1,32 @@
 import { notFound } from "next/navigation";
 import { MessageCircle } from "lucide-react";
 import SendMessageForm from "@/components/SendMessageForm";
-import { db } from "@/lib/db";
+import { getDb } from "@/lib/db"; // Use the getter function
 import { ObjectId } from "mongodb";
 
-export default async function PublicProfilePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function PublicProfilePage({ 
+  params 
+}: { 
+  params: Promise<{ id: string }> 
+}) {
   const { id } = await params;
+
+  // 1. Validate the ID format before even hitting the DB
+  if (!ObjectId.isValid(id)) {
+    return notFound();
+  }
 
   let user;
   try {
-    user = await db.collection("user").findOne({ _id: new ObjectId(id) });
-  } catch {
+    // 2. Await the DB connection using your new getter
+    const database = await getDb();
+    
+    // 3. Query the user collection (Better Auth usually names it "user")
+    user = await database.collection("user").findOne({ 
+      _id: new ObjectId(id) 
+    });
+  } catch (error) {
+    console.error("Profile Fetch Error:", error);
     return notFound(); 
   }
 
@@ -31,6 +47,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
           </p>
         </div>
 
+        {/* Pass the ID as a string to the client component */}
         <SendMessageForm recipientId={user._id.toString()} />
       </div>
     </div>
