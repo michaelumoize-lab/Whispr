@@ -70,14 +70,12 @@ export function getDb(): Promise<Db> {
  * Better Auth needs the Promise<MongoClient>.
  * We ensure the connection logic starts when this is called.
  */
-export function getClientPromise(): Promise<MongoClient> {
+export async function getClientPromise(): Promise<MongoClient> {
   if (!global._mongoClientPromise) {
-    // Trigger the connection via connectDB logic
-    connectDB(); 
+    await connectDB();
   }
   return global._mongoClientPromise!;
 }
-
 // Export the raw promise for the Better Auth adapter
 export const clientPromise = getClientPromise();
 

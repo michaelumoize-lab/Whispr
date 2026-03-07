@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import MessageCard from "@/components/MessageCard";
 import { Inbox } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { AnimatePresence } from "framer-motion";
 
 interface Message {
   _id: string;
@@ -25,40 +26,46 @@ export default function MessageList({ messages }: Props) {
   }, [messages]);
 
  const handleDelete = async (id: string) => {
-    if (deletingIds.current.has(id)) return;
-    deletingIds.current.add(id);
+  if (deletingIds.current.has(id)) return;
+  deletingIds.current.add(id);
 
-    const originalList = [...messageList];
-    setMessageList((prev) => prev.filter((msg) => msg._id !== id));
+  const originalList = [...messageList];
+  // Optimistic UI update
+  setMessageList((prev) => prev.filter((msg) => msg._id !== id));
 
-    try {
-      const response = await fetch(`/api/messages/${id}`, {
-        method: "DELETE",
-      });
+  try {
+    const response = await fetch(`/api/messages/${id}`, {
+      method: "DELETE",
+    });
 
-      // 1. Get the data once here
-      const data = await response.json();
-
-      if (response.ok) {
-        toast.success("Message deleted");
-      } else {
-        // 2. Use the status and the already-parsed data
-        if (response.status === 404) {
-          // It's already gone from the DB, so we stay optimistic
-          toast.success("Message deleted"); 
-        } else {
-          setMessageList(originalList);
-          toast.error(data.error || "Failed to delete");
-        }
-      }
-    } catch (error) {
-      console.error("Delete error:", error);
+    if (response.ok) {
+      toast.success("Message deleted");
+    } else if (response.status === 404) {
+      // If 404, it's already gone from DB, so we stay optimistic
+      toast.success("Message deleted");
+    } else {
+      // Something actually went wrong (400, 403, 500, etc.)
       setMessageList(originalList);
-      toast.error("Check your internet connection.");
-    } finally {
-      deletingIds.current.delete(id);
+      
+      let errorMessage = "Failed to delete";
+      try {
+        // Only try to parse JSON if there's actually a body
+        const data = await response.json();
+        errorMessage = data.error || errorMessage;
+      } catch {
+        // If JSON parsing fails, we just fall back to the default errorMessage
+      }
+      
+      toast.error(errorMessage);
     }
-  };
+  } catch (error) {
+    console.error("Delete error:", error);
+    setMessageList(originalList);
+    toast.error("Check your internet connection.");
+  } finally {
+    deletingIds.current.delete(id);
+  }
+};
 
   return (
     <div className="w-full space-y-4 animate-in fade-in duration-500">
@@ -85,12 +92,14 @@ export default function MessageList({ messages }: Props) {
         </div>
       ) : (
         <div className="grid gap-4">
+          <AnimatePresence>
           {messageList.map((msg) => (
             <div
               key={msg._id}
               className="transition-all duration-300 ease-in-out"
             >
               <MessageCard
+                key={msg._id}
                 id={msg._id}
                 text={msg.text}
                 createdAt={msg.createdAt}
@@ -98,6 +107,7 @@ export default function MessageList({ messages }: Props) {
               />
             </div>
           ))}
+          </AnimatePresence>
         </div>
       )}
     </div>

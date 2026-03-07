@@ -10,10 +10,23 @@ export default function DashboardActions({ link }: { link: string }) {
   const [copied, setCopied] = useState(false);
   const router = useRouter();
   
-  // Track if this is the first render to prevent toast on page load
   const isFirstRender = useRef(true);
 
-  // Trigger toast only AFTER the sync (transition) finishes
+  // --- 1. CLEANUP TIMEOUT LOGIC ---
+  useEffect(() => {
+    if (!copied) return;
+
+    // Reset the "Copied" state after 2 seconds
+    const timer = setTimeout(() => {
+      setCopied(false);
+    }, 2000);
+
+    // Cleanup: if the user navigates away or clicks share again
+    // before the 2 seconds are up, this kills the timer.
+    return () => clearTimeout(timer);
+  }, [copied]);
+
+  // Sync logic
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
@@ -27,13 +40,11 @@ export default function DashboardActions({ link }: { link: string }) {
 
   const handleRefresh = () => {
     startTransition(() => {
-      // router.refresh() updates Server Component data without a full page reload
       router.refresh();
     });
   };
 
   const handleShare = async () => {
-    // Web Share API for Mobile/Supported browsers
     if (typeof navigator !== "undefined" && navigator.share) {
       try {
         await navigator.share({
@@ -42,18 +53,16 @@ export default function DashboardActions({ link }: { link: string }) {
           url: link,
         });
       } catch (err) {
-        // Only show error if it wasn't a user cancellation
         if (err instanceof Error && err.name !== "AbortError") {
           toast.error("Sharing failed");
         }
       }
     } else {
-      // Fallback: Clipboard Copy
       try {
         await navigator.clipboard.writeText(link);
         setCopied(true);
         toast.success("Link copied!");
-        setTimeout(() => setCopied(false), 2000);
+        // ✅ No more setTimeout here! The useEffect handles it.
       } catch (err) {
         toast.error("Failed to copy link");
       }

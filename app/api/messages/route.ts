@@ -37,10 +37,9 @@ export async function POST(req: NextRequest) {
     // 3. Create the message via Mongoose
     // Mongoose is already connected because getDb() awaited connectDB()
     const message = await Message.create({
-      recipientId: new ObjectId(recipientId), 
+      recipientId: ObjectId.isValid(recipientId) ? new ObjectId(recipientId) : recipientId, 
       text: text.trim(), 
     });
-
     const formattedMessage = message.toJSON();
 
     return NextResponse.json(
