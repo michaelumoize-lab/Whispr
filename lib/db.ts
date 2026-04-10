@@ -38,7 +38,6 @@ async function connectDB(): Promise<Db> {
     }
     
     const client = await global._mongoClientPromise;
-    console.log("✅ DB Drivers Ready");
     
     return client.db("whispr");
 

@@ -34,7 +34,8 @@ export async function DELETE(
       );
     }
 
-    return NextResponse.json({ success: true }), { status: 200 };
+    return NextResponse.json({ success: true }, { status: 200 });
+    
   } catch (error) {
     console.error("DELETE_ERROR:", error);
     return NextResponse.json(

@@ -2,15 +2,20 @@
 
 import { useState } from "react";
 import { Send, Loader2 } from "lucide-react";
-import { toast } from "react-hot-toast"; 
+import { toast } from "react-hot-toast";
 
-export default function SendMessageForm({ recipientId }: { recipientId: string }) {
+export default function SendMessageForm({
+  recipientId,
+}: {
+  recipientId: string;
+}) {
   const [text, setText] = useState("");
   const [isSending, setIsSending] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     // Prevent default form submission and reload
-    e.preventDefault();    if (!text.trim()) return;
+    e.preventDefault();
+    if (!text.trim()) return;
 
     setIsSending(true);
     try {
@@ -25,6 +30,7 @@ export default function SendMessageForm({ recipientId }: { recipientId: string }
       toast.success("Message sent anonymously!");
       setText(""); // Clear form
     } catch (error) {
+      console.error(error);
       toast.error("Something went wrong. Try again.");
     } finally {
       setIsSending(false);

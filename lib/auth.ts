@@ -1,11 +1,14 @@
 // lib/auth.ts
 import { betterAuth } from "better-auth";
-import { mongodbAdapter } from "@better-auth/mongo-adapter";
+import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { nextCookies } from "better-auth/next-js";
-import { getDb } from "./db"; 
+import { clientPromise } from "./db";
+
+const client = await clientPromise;
+const db = client.db("whispr"); // ← explicit lowercase db name
 
 export const auth = betterAuth({
-  database: mongodbAdapter(await getDb()),
+  database: mongodbAdapter(db, { client }), // ← matches docs pattern exactly
   plugins: [nextCookies()],
   emailAndPassword: { enabled: true },
   socialProviders: {
@@ -15,7 +18,6 @@ export const auth = betterAuth({
     },
   },
 });
-
 
 // import dns from "node:dns/promises";
 // import { betterAuth } from "better-auth";
