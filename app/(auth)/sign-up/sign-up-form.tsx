@@ -64,9 +64,9 @@ export function SignUpForm() {
         toast.error(message, { id: toastId }); // keep only this one
       } else {
         toast.success("Account created successfully!", { id: toastId });
-        router.push("/dashboard"); // remove router.refresh()
-      }
-    } catch (err) {
+        router.push("/dashboard");
+        router.refresh();
+      }    } catch (err) {
       toast.error("An unexpected error occurred", { id: toastId });
       console.error(err);
     }
