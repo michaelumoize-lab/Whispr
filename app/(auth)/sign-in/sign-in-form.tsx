@@ -4,7 +4,7 @@ import { authClient } from "@/lib/auth-client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { z } from "zod";
@@ -26,6 +26,21 @@ export function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect");
+  const errorParam = searchParams.get("error");
+
+  useEffect(() => {
+    if (errorParam === "unauthorized") {
+      toast.error("Please sign in to access your dashboard", {
+        id: "unauthorized-error", 
+      });
+      
+      // Remove error param from URL
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("error");
+      const newQuery = params.toString();
+      window.history.replaceState(null, "", newQuery ? `?${newQuery}` : window.location.pathname);
+    }
+  }, [errorParam, searchParams]);
 
   const {
     register,

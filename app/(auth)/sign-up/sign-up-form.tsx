@@ -61,13 +61,12 @@ export function SignUpForm() {
       if (error) {
         const message = error.message || "Failed to create account";
         setError(message);
-        toast.error(message, { id: toastId });
+        toast.error(message, { id: toastId }); // keep only this one
       } else {
         toast.success("Account created successfully!", { id: toastId });
         router.push("/dashboard");
         router.refresh();
-      }
-    } catch (err) {
+      }    } catch (err) {
       toast.error("An unexpected error occurred", { id: toastId });
       console.error(err);
     }

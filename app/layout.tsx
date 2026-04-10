@@ -13,7 +13,7 @@ const outfit = Outfit({
 
 export const metadata: Metadata = {
   title: "Whispr",
-  description: "Whispr - Send me an anonymous message!",
+  description: "Whispr - An anonymous messaging app",
 };
 
 export default function RootLayout({

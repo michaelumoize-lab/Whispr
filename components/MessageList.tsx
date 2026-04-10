@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import MessageCard from "@/components/MessageCard";
 import { Inbox } from "lucide-react";
+import { toast } from "react-hot-toast";
+import { AnimatePresence } from "framer-motion";
 
 interface Message {
   _id: string;
@@ -16,14 +18,54 @@ interface Props {
 
 export default function MessageList({ messages }: Props) {
   const [messageList, setMessageList] = useState<Message[]>(messages);
+  // Track IDs currently being deleted to prevent double-firing
+  const deletingIds = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     setMessageList(messages);
   }, [messages]);
 
-  const handleDelete = (id: string) => {
-    setMessageList((prev) => prev.filter((msg) => msg._id !== id));
-  };
+ const handleDelete = async (id: string) => {
+  if (deletingIds.current.has(id)) return;
+  deletingIds.current.add(id);
+
+  const originalList = [...messageList];
+  // Optimistic UI update
+  setMessageList((prev) => prev.filter((msg) => msg._id !== id));
+
+  try {
+    const response = await fetch(`/api/messages/${id}`, {
+      method: "DELETE",
+    });
+
+    if (response.ok) {
+      toast.success("Message deleted");
+    } else if (response.status === 404) {
+      // If 404, it's already gone from DB, so we stay optimistic
+      toast.success("Message deleted");
+    } else {
+      // Something actually went wrong (400, 403, 500, etc.)
+      setMessageList(originalList);
+      
+      let errorMessage = "Failed to delete";
+      try {
+        // Only try to parse JSON if there's actually a body
+        const data = await response.json();
+        errorMessage = data.error || errorMessage;
+      } catch {
+        // If JSON parsing fails, we just fall back to the default errorMessage
+      }
+      
+      toast.error(errorMessage);
+    }
+  } catch (error) {
+    console.error("Delete error:", error);
+    setMessageList(originalList);
+    toast.error("Check your internet connection.");
+  } finally {
+    deletingIds.current.delete(id);
+  }
+};
 
   return (
     <div className="w-full space-y-4 animate-in fade-in duration-500">
@@ -33,7 +75,8 @@ export default function MessageList({ messages }: Props) {
           Your Whispers
         </h2>
         <span className="w-fit rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground shadow-sm">
-          {messageList.length} {messageList.length === 1 ? "Message" : "Messages"}
+          {messageList.length}{" "}
+          {messageList.length === 1 ? "Message" : "Messages"}
         </span>
       </div>
 
@@ -49,11 +92,22 @@ export default function MessageList({ messages }: Props) {
         </div>
       ) : (
         <div className="grid gap-4">
+          <AnimatePresence>
           {messageList.map((msg) => (
-            <div key={msg._id} className="transition-all duration-300 ease-in-out">
-              <MessageCard id={msg._id} text={msg.text} createdAt={msg.createdAt} onDelete={handleDelete} />
+            <div
+              key={msg._id}
+              className="transition-all duration-300 ease-in-out"
+            >
+              <MessageCard
+                key={msg._id}
+                id={msg._id}
+                text={msg.text}
+                createdAt={msg.createdAt}
+                onDelete={handleDelete}
+              />
             </div>
           ))}
+          </AnimatePresence>
         </div>
       )}
     </div>
