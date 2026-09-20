@@ -85,21 +85,30 @@ export function SignInForm() {
     }
   }
 
-  async function handleSocialSignIn(provider: "google" | "github") {
-    setError(null);
-    
-    const { error } = await authClient.signIn.social({
-      provider,
-      callbackURL: redirect ?? "/dashboard",
-    });
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
-    if (error) {
-      // Don't show toast if user just closed the popup
-      if (error.message !== "User cancelled") {
-        const message = error.message || `Failed to sign in with ${provider}`;
-        setError(message);
-        toast.error(message);
+  async function handleSocialSignIn(provider: "google") {
+    setError(null);
+    setIsGoogleLoading(true);
+
+    try {
+      const { error } = await authClient.signIn.social({
+        provider,
+        callbackURL: redirect ?? "/dashboard",
+      });
+
+      if (error) {
+        if (error.message !== "User cancelled") {
+          const message = error.message || `Failed to sign in with ${provider}`;
+          setError(message);
+          toast.error(message);
+        }
       }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to sign in with Google");
+    } finally {
+      setIsGoogleLoading(false);
     }
   }
 
@@ -212,11 +221,17 @@ export function SignInForm() {
         <button
           type="button"
           onClick={() => handleSocialSignIn("google")}
-          disabled={isSubmitting}
+          disabled={isSubmitting || isGoogleLoading}
           className="inline-flex items-center justify-center w-full h-10 px-4 py-2 bg-background border border-input text-foreground font-medium rounded-md hover:bg-muted transition-all disabled:opacity-50 gap-2"
         >
-          <GoogleIcon width="1.2em" height="1.2em" />
-          Google
+          {isGoogleLoading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <>
+              <GoogleIcon width="1.2em" height="1.2em" />
+              Google
+            </>
+          )}
         </button>
       </form>
 

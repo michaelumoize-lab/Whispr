@@ -63,7 +63,7 @@ export default function DashboardActions({ link }: { link: string }) {
         setCopied(true);
         toast.success("Link copied!");
         // ✅ No more setTimeout here! The useEffect handles it.
-      } catch (err) {
+      } catch {
         toast.error("Failed to copy link");
       }
     }

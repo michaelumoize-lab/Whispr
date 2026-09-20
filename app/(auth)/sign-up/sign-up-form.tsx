@@ -10,6 +10,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { z } from "zod";
 import { Eye, EyeOff, Loader2, ArrowLeft } from "lucide-react";
+import { GoogleIcon } from "@/components/icons/GoogleIcon";
 
 const signUpSchema = z
   .object({
@@ -30,7 +31,33 @@ type SignUpValues = z.infer<typeof signUpSchema>;
 export function SignUpForm() {
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const router = useRouter();
+
+  async function handleSocialSignIn(provider: "google") {
+    setError(null);
+    setIsGoogleLoading(true);
+
+    try {
+      const { error } = await authClient.signIn.social({
+        provider,
+        callbackURL: "/dashboard",
+      });
+
+      if (error) {
+        if (error.message !== "User cancelled") {
+          const message = error.message || `Failed to sign in with ${provider}`;
+          setError(message);
+          toast.error(message);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to sign in with Google");
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  }
 
   const {
     register,
@@ -167,13 +194,40 @@ export function SignUpForm() {
 
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || isGoogleLoading}
           className="inline-flex items-center justify-center w-full h-10 px-4 py-2 bg-primary text-primary-foreground font-bold rounded-md hover:opacity-90 transition-all active:scale-[0.98] disabled:opacity-50"
         >
           {isSubmitting ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
             "Create an account"
+          )}
+        </button>
+
+        <div className="relative my-4">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-border"></span>
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-card px-2 text-muted-foreground">
+              Or continue with
+            </span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => handleSocialSignIn("google")}
+          disabled={isSubmitting || isGoogleLoading}
+          className="inline-flex items-center justify-center w-full h-10 px-4 py-2 bg-background border border-input text-foreground font-medium rounded-md hover:bg-muted transition-all disabled:opacity-50 gap-2"
+        >
+          {isGoogleLoading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <>
+              <GoogleIcon width="1.2em" height="1.2em" />
+              Google
+            </>
           )}
         </button>
       </form>

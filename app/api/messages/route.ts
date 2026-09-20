@@ -1,18 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Message } from "@/database/models/Message";
 import { getDb } from "@/lib/db";
+import { createMessageSchema } from "@/lib/validation";
 import { ObjectId } from "mongodb";
 
 export async function POST(req: NextRequest) {
   try {
-    const { recipientId, text } = await req.json();
+    const body = await req.json();
+    const result = createMessageSchema.safeParse(body);
 
-    if (!recipientId || !text?.trim()) {
-      return NextResponse.json(
-        { error: "Recipient ID and message text are required" },
-        { status: 400 }
-      );
+    if (!result.success) {
+      const firstError = result.error.issues[0]?.message || "Invalid request data";
+      return NextResponse.json({ error: firstError }, { status: 400 });
     }
+
+    const { recipientId, text } = result.data;
 
     // Query Better Auth's user collection directly
     const db = await getDb();
@@ -21,12 +23,12 @@ export async function POST(req: NextRequest) {
     });
 
     if (!user) {
-      return NextResponse.json({ error: "User does not exist" }, { status: 400 });
+      return NextResponse.json({ error: "User does not exist" }, { status: 404 });
     }
 
     const message = await Message.create({
-      recipientId: new ObjectId(recipientId),
-      text: text.trim(),
+      recipientId,
+      text,
     });
 
     const formattedMessage = message.toJSON();
@@ -48,4 +50,4 @@ export async function POST(req: NextRequest) {
     console.error("Error creating message:", errorMessage);
     return NextResponse.json({ error: "Failed to send whisper" }, { status: 500 });
   }
-}
+}

@@ -15,34 +15,44 @@ export default function Navbar() {
   const router = useRouter();
   
   const menuRef = useRef<HTMLDivElement>(null);
+  const desktopMenuRef = useRef<HTMLDivElement>(null);
 
-  // Close mobile menu when clicking outside
+  // Close menus when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (mobileOpen && menuRef.current && !menuRef.current.contains(target)) {
         setMobileOpen(false);
       }
+      if (showUserMenu && desktopMenuRef.current && !desktopMenuRef.current.contains(target)) {
+        setShowUserMenu(false);
+      }
     };
-    if (mobileOpen) {
+
+    if (mobileOpen || showUserMenu) {
       document.addEventListener("mousedown", handleClickOutside);
     }
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [mobileOpen]);
+  }, [mobileOpen, showUserMenu]);
 
   const handleLogout = async () => {
+    setShowUserMenu(false);
+    setMobileOpen(false);
     await authClient.signOut({
       fetchOptions: {
         onSuccess: () => {
-          setMobileOpen(false);
           router.push("/");
+          router.refresh();
         },
       },
     });
   };
 
-  const getInitials = (name: string) => {
+  const getInitials = (name?: string | null) => {
+    if (!name?.trim()) return "U";
     return name
-      .split(" ")
+      .trim()
+      .split(/\s+/)
       .map((n) => n[0])
       .join("")
       .toUpperCase()
@@ -67,10 +77,12 @@ export default function Navbar() {
           <div className="flex items-center">
             {session ? (
               /* Desktop User Avatar (Hidden on Mobile) */
-              <div className="hidden md:block relative">
+              <div ref={desktopMenuRef} className="hidden md:block relative">
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
                   className="flex items-center gap-2 p-1 rounded-full hover:bg-muted transition-all"
+                  aria-expanded={showUserMenu}
+                  aria-label="User menu"
                 >
                   {session.user.image ? (
                     <Image
@@ -89,10 +101,13 @@ export default function Navbar() {
 
                 {showUserMenu && (
                   <div 
-                    onMouseLeave={() => setShowUserMenu(false)}
                     className="absolute right-0 mt-3 w-52 bg-card border border-border rounded-2xl shadow-xl py-2 z-[110] animate-in fade-in zoom-in-95 duration-200"
                   >
-                    <Link href="/dashboard" className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-muted transition-colors">
+                    <Link
+                      href="/dashboard"
+                      onClick={() => setShowUserMenu(false)}
+                      className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-muted transition-colors"
+                    >
                       <LayoutDashboard size={16} /> Dashboard
                     </Link>
                     <button

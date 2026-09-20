@@ -9,12 +9,17 @@ export interface IPersonalLink {
 const PersonalLinkSchema = new mongoose.Schema({
   userId: { 
     type: String, 
-    required: true 
+    required: true,
+    index: true,
+    unique: true,
   },
   slug: { 
     type: String, 
     required: true, 
-    unique: true },
+    unique: true,
+    lowercase: true,
+    trim: true,
+  },
 });
 
 export const PersonalLink =
