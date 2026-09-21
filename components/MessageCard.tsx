@@ -2,6 +2,7 @@
 
 import { Trash2, Share2, Loader2, Clock } from "lucide-react";
 import { motion } from "framer-motion";
+import { usePostHog } from "@posthog/react";
 
 function formatMessageDate(dateStr: string): string {
   const date = new Date(dateStr);
@@ -60,6 +61,22 @@ export default function MessageCard({
   onSelect,
   isDeleting = false,
 }: MessageCardProps) {
+  const posthog = usePostHog();
+
+  const handleOpenShare = () => {
+    if (isDeleting) return;
+    posthog?.capture("share_card_opened", {
+      message_length: text.length,
+    });
+    onSelect?.(id);
+  };
+
+  const handleDelete = () => {
+    if (isDeleting) return;
+    posthog?.capture("message_deleted");
+    onDelete(id);
+  };
+
   return (
     <motion.div
       layout // Smoothly repositions other cards when one is deleted
@@ -67,9 +84,7 @@ export default function MessageCard({
       animate={{ opacity: isDeleting ? 0.45 : 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.2 }}
-      onClick={() => {
-        if (!isDeleting) onSelect?.(id);
-      }}
+      onClick={handleOpenShare}
       className={`group bg-card p-4 rounded-xl border border-border shadow-sm flex justify-between items-start gap-3 transition-all relative ${
         isDeleting
           ? "pointer-events-none opacity-50 cursor-not-allowed border-destructive/30"
@@ -105,7 +120,7 @@ export default function MessageCard({
         <button
           onClick={(e) => {
             e.stopPropagation();
-            if (!isDeleting) onSelect?.(id);
+            handleOpenShare();
           }}
           disabled={isDeleting}
           className="text-muted-foreground hover:text-primary hover:bg-primary/10 p-2 rounded-lg transition disabled:opacity-40"
@@ -118,7 +133,7 @@ export default function MessageCard({
         <button
           onClick={(e) => {
             e.stopPropagation();
-            if (!isDeleting) onDelete(id);
+            handleDelete();
           }}
           disabled={isDeleting}
           className="text-destructive hover:bg-destructive/10 p-2 rounded-lg transition disabled:opacity-40"

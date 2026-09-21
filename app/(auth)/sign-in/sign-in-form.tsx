@@ -10,6 +10,7 @@ import { toast } from "react-hot-toast";
 import { z } from "zod";
 import { Eye, EyeOff, Loader2, ArrowLeft } from "lucide-react";
 import { GoogleIcon } from "@/components/icons/GoogleIcon";
+import { usePostHog } from "@posthog/react";
 
 const signInSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email" }),
@@ -20,6 +21,7 @@ const signInSchema = z.object({
 type SignInValues = z.infer<typeof signInSchema>;
 
 export function SignInForm() {
+  const posthog = usePostHog();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -75,6 +77,7 @@ export function SignInForm() {
         setError(message);
         toast.error(message, { id: toastId });
       } else {
+        posthog?.capture("user_signed_in", { method: "email" });
         toast.success("Welcome back!", { id: toastId });
         router.push(redirect ?? "/dashboard");
         router.refresh(); // Ensure session state is updated
@@ -90,6 +93,7 @@ export function SignInForm() {
   async function handleSocialSignIn(provider: "google") {
     setError(null);
     setIsGoogleLoading(true);
+    posthog?.capture("user_signed_in_attempt", { method: provider });
 
     try {
       const { error } = await authClient.signIn.social({

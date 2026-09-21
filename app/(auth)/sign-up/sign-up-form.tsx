@@ -11,6 +11,7 @@ import { toast } from "react-hot-toast";
 import { z } from "zod";
 import { Eye, EyeOff, Loader2, ArrowLeft } from "lucide-react";
 import { GoogleIcon } from "@/components/icons/GoogleIcon";
+import { usePostHog } from "@posthog/react";
 
 const signUpSchema = z
   .object({
@@ -29,6 +30,7 @@ const signUpSchema = z
 type SignUpValues = z.infer<typeof signUpSchema>;
 
 export function SignUpForm() {
+  const posthog = usePostHog();
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -37,6 +39,7 @@ export function SignUpForm() {
   async function handleSocialSignIn(provider: "google") {
     setError(null);
     setIsGoogleLoading(true);
+    posthog?.capture("user_signed_up_attempt", { method: provider });
 
     try {
       const { error } = await authClient.signIn.social({
@@ -90,6 +93,7 @@ export function SignUpForm() {
         setError(message);
         toast.error(message, { id: toastId }); // keep only this one
       } else {
+        posthog?.capture("user_signed_up", { method: "email" });
         toast.success("Account created successfully!", { id: toastId });
         router.push("/dashboard");
         router.refresh();

@@ -41,7 +41,7 @@ export default function StoryShowcaseSection() {
                   @michael
                 </span>
                 <span className="text-[10px] text-white/50">
-                  whispr.app/whispr/michael
+                  whispr.app/michael
                 </span>
               </div>
             </div>

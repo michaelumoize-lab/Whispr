@@ -4,8 +4,10 @@ import { RefreshCw, Share2, Check } from "lucide-react";
 import { useState, useTransition, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
+import { usePostHog } from "@posthog/react";
 
 export default function DashboardActions({ link }: { link: string }) {
+  const posthog = usePostHog();
   const [isPending, startTransition] = useTransition();
   const [copied, setCopied] = useState(false);
   const router = useRouter();
@@ -39,6 +41,7 @@ export default function DashboardActions({ link }: { link: string }) {
   }, [isPending]);
 
   const handleRefresh = () => {
+    posthog?.capture("inbox_synced");
     startTransition(() => {
       router.refresh();
     });
@@ -52,6 +55,7 @@ export default function DashboardActions({ link }: { link: string }) {
           text: "Tell me something anonymously!",
           url: link,
         });
+        posthog?.capture("dashboard_link_shared_native");
       } catch (err) {
         if (err instanceof Error && err.name !== "AbortError") {
           toast.error("Sharing failed");
@@ -61,6 +65,7 @@ export default function DashboardActions({ link }: { link: string }) {
       try {
         await navigator.clipboard.writeText(link);
         setCopied(true);
+        posthog?.capture("dashboard_link_copied");
         toast.success("Link copied!");
         // ✅ No more setTimeout here! The useEffect handles it.
       } catch {

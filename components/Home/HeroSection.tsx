@@ -107,7 +107,7 @@ export default function HeroSection() {
                 {/* Personal Link Banner */}
                 <div className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-muted/40 border border-border/60 text-xs">
                   <span className="truncate font-mono text-muted-foreground">
-                    whispr.app/whispr/<span className="text-foreground font-semibold">alex</span>
+                    whispr.app/<span className="text-foreground font-semibold">alex</span>
                   </span>
                   <button
                     onClick={handleCopy}

@@ -3,18 +3,21 @@
 import { ClipboardCopy, ExternalLink, Check } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useState } from "react";
+import { usePostHog } from "@posthog/react";
 
 interface PersonalLinkProps {
   link: string;
 }
 
 export default function PersonalLink({ link }: PersonalLinkProps) {
+  const posthog = usePostHog();
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(link);
       setCopied(true);
+      posthog?.capture("personal_link_copied");
       toast.success("Link copied!");
       setTimeout(() => {
         setCopied(false);

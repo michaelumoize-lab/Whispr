@@ -42,7 +42,7 @@ export default async function DashboardPage() {
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/+$/, "") || "http://localhost:3000";
   const linkIdentifier = userSlug || userId;
-  const personalLink = `${baseUrl}/whispr/${linkIdentifier}`;
+  const personalLink = `${baseUrl}/${linkIdentifier}`;
 
   return (
     <div className="max-w-5xl mt-6 mx-auto space-y-6 sm:space-y-8">

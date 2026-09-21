@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Download, Share2, Copy, Sparkles, Quote, Loader2, Check } from "lucide-react";
 import { toPng, toBlob } from "html-to-image";
 import { toast } from "react-hot-toast";
+import { usePostHog } from "@posthog/react";
 
 interface ShareCardModalProps {
   isOpen: boolean;
@@ -64,6 +65,7 @@ export default function ShareCardModal({
   userHandle,
   personalLink,
 }: ShareCardModalProps) {
+  const posthog = usePostHog();
   const [selectedTheme, setSelectedTheme] = useState(THEMES[0]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -97,7 +99,7 @@ export default function ShareCardModal({
   const displayLink = personalLink
     ? personalLink.replace(/^https?:\/\//, "")
     : userHandle
-    ? `whispr.app/whispr/${userHandle}`
+    ? `whispr.app/${userHandle}`
     : "whispr.app";
 
   const handleDownload = async () => {
@@ -115,6 +117,11 @@ export default function ShareCardModal({
       link.download = `whispr-${message._id.slice(-6)}.png`;
       link.href = dataUrl;
       link.click();
+
+      posthog?.capture("share_card_downloaded", {
+        theme_name: selectedTheme.name,
+        theme_id: selectedTheme.id,
+      });
 
       toast.success("Card downloaded!", { id: toastId });
     } catch (error) {
@@ -148,6 +155,10 @@ export default function ShareCardModal({
           title: "Anonymous Whisper",
           text: "Look what someone whispered to me on Whispr!",
         });
+        posthog?.capture("share_card_shared_native", {
+          theme_name: selectedTheme.name,
+          theme_id: selectedTheme.id,
+        });
         toast.dismiss(toastId);
       } else {
         // Fallback to clipboard if Web Share with files is not supported
@@ -155,6 +166,11 @@ export default function ShareCardModal({
           new ClipboardItem({ "image/png": blob }),
         ]);
         setCopied(true);
+        posthog?.capture("share_card_image_copied", {
+          theme_name: selectedTheme.name,
+          theme_id: selectedTheme.id,
+          source: "share_fallback",
+        });
         setTimeout(() => setCopied(false), 2000);
         toast.success("Image copied to clipboard! Ready to paste anywhere.", {
           id: toastId,
@@ -190,6 +206,11 @@ export default function ShareCardModal({
       ]);
 
       setCopied(true);
+      posthog?.capture("share_card_image_copied", {
+        theme_name: selectedTheme.name,
+        theme_id: selectedTheme.id,
+        source: "direct_copy_button",
+      });
       setTimeout(() => setCopied(false), 2000);
       toast.success("Image copied to clipboard!", { id: toastId });
     } catch (error) {

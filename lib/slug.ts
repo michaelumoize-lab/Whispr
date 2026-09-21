@@ -1,6 +1,30 @@
 import { PersonalLink } from "@/database/models/PersonalLink";
 import { getDb } from "@/lib/db";
 
+export const RESERVED_SLUGS = new Set([
+  "dashboard",
+  "sign-in",
+  "sign-up",
+  "api",
+  "whispr",
+  "profile",
+  "settings",
+  "login",
+  "register",
+  "logout",
+  "admin",
+  "auth",
+  "favicon",
+  "robots",
+  "sitemap",
+  "terms",
+  "privacy",
+  "about",
+  "help",
+  "support",
+  "contact",
+]);
+
 /**
  * Normalizes a display name into a clean, URL-safe alphanumeric slug.
  * Example: "Randy Mike" -> "randymike"
@@ -41,11 +65,11 @@ export async function getOrCreateUserSlug(
   // 2. Generate clean base slug from name
   const baseSlug = formatBaseSlug(userName);
 
-  // 3. Find an untaken unique slug (checking for collisions)
+  // 3. Find an untaken unique slug (checking for DB collisions and reserved words)
   let candidate = baseSlug;
   let counter = 1;
 
-  while (await PersonalLink.exists({ slug: candidate })) {
+  while (RESERVED_SLUGS.has(candidate.toLowerCase()) || (await PersonalLink.exists({ slug: candidate }))) {
     candidate = `${baseSlug}${counter}`;
     counter++;
 

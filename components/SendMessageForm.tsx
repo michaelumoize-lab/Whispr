@@ -4,12 +4,14 @@ import { useState, useRef, useEffect } from "react";
 import { Send, Loader2, CheckCircle2, RotateCcw, Sparkles } from "lucide-react";
 import { toast } from "react-hot-toast";
 import Link from "next/link";
+import { usePostHog } from "@posthog/react";
 
 export default function SendMessageForm({
   recipientId,
 }: {
   recipientId: string;
 }) {
+  const posthog = usePostHog();
   const [text, setText] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -46,6 +48,9 @@ export default function SendMessageForm({
       }
 
       toast.success("Message sent anonymously!");
+      posthog?.capture("whisper_sent", {
+        character_count: text.length,
+      });
       setText("");
       setIsSuccess(true);
     } catch (error) {
@@ -117,6 +122,8 @@ export default function SendMessageForm({
           placeholder="Write your anonymous message here..."
           className="w-full min-h-[150px] p-4 pb-8 rounded-2xl border border-border bg-card resize-none overflow-hidden [field-sizing:content] focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-[border-color,box-shadow]"
           maxLength={500}
+          spellCheck={false}
+          suppressHydrationWarning
         />
         <div
           className={`absolute bottom-3 right-3 text-xs pointer-events-none select-none transition-colors ${counterColorClass}`}

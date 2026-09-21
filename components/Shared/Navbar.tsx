@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { MessageCircle, Menu, X, LogOut, LayoutDashboard } from "lucide-react";
 import ModeToggle from "@/components/ModeToggle";
@@ -8,7 +8,17 @@ import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
+const emptySubscribe = () => () => {};
+function useIsMounted() {
+  return useSyncExternalStore(
+    emptySubscribe,
+    () => true,  // Client value
+    () => false  // Server/Hydration value
+  );
+}
+
 export default function Navbar() {
+  const mounted = useIsMounted();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const { data: session, isPending } = authClient.useSession();
@@ -73,63 +83,63 @@ export default function Navbar() {
       <div className="flex items-center gap-2">
         <ModeToggle />
 
-        {!isPending && (
-          <div className="flex items-center">
-            {session ? (
-              /* Desktop User Avatar (Hidden on Mobile) */
-              <div ref={desktopMenuRef} className="hidden md:block relative">
-                <button
-                  onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center gap-2 p-1 rounded-full hover:bg-muted transition-all"
-                  aria-expanded={showUserMenu}
-                  aria-label="User menu"
-                >
-                  {session.user.image ? (
-                    <Image
-                      src={session.user.image}
-                      alt={session.user.name}
-                      width={32}
-                      height={32}
-                      className="rounded-full border border-primary/20"
-                    />
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-[10px] font-bold text-primary-foreground">
-                      {getInitials(session.user.name)}
-                    </div>
-                  )}
-                </button>
-
-                {showUserMenu && (
-                  <div 
-                    className="absolute right-0 mt-3 w-52 bg-card border border-border rounded-2xl shadow-xl py-2 z-[110] animate-in fade-in zoom-in-95 duration-200"
-                  >
-                    <Link
-                      href="/dashboard"
-                      onClick={() => setShowUserMenu(false)}
-                      className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-muted transition-colors"
-                    >
-                      <LayoutDashboard size={16} /> Dashboard
-                    </Link>
-                    <button
-                      onClick={handleLogout}
-                      className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
-                    >
-                      <LogOut size={16} /> Logout
-                    </button>
+        <div className="flex items-center min-h-[36px]">
+          {!mounted || isPending ? (
+            <div className="hidden md:block w-8 h-8 rounded-full bg-muted/40 animate-pulse" />
+          ) : session ? (
+            /* Desktop User Avatar (Hidden on Mobile) */
+            <div ref={desktopMenuRef} className="hidden md:block relative">
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="flex items-center gap-2 p-1 rounded-full hover:bg-muted transition-all"
+                aria-expanded={showUserMenu}
+                aria-label="User menu"
+              >
+                {session.user.image ? (
+                  <Image
+                    src={session.user.image}
+                    alt={session.user.name}
+                    width={32}
+                    height={32}
+                    className="rounded-full border border-primary/20"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-[10px] font-bold text-primary-foreground">
+                    {getInitials(session.user.name)}
                   </div>
                 )}
-              </div>
-            ) : (
-              /* Desktop Auth Link (Hidden on Mobile) */
-              <Link
-                href="/sign-in"
-                className="hidden md:flex bg-primary text-primary-foreground px-5 py-2 rounded-full text-sm font-bold hover:opacity-90 transition"
-              >
-                Get Started
-              </Link>
-            )}
-          </div>
-        )}
+              </button>
+
+              {showUserMenu && (
+                <div 
+                  className="absolute right-0 mt-3 w-52 bg-card border border-border rounded-2xl shadow-xl py-2 z-[110] animate-in fade-in zoom-in-95 duration-200"
+                >
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setShowUserMenu(false)}
+                    className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-muted transition-colors"
+                  >
+                    <LayoutDashboard size={16} /> Dashboard
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
+                  >
+                    <LogOut size={16} /> Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            /* Desktop Auth Link (Hidden on Mobile) */
+            <Link
+              href="/sign-in"
+              className="hidden md:flex bg-primary text-primary-foreground px-5 py-2 rounded-full text-sm font-bold hover:opacity-90 transition"
+            >
+              Get Started
+            </Link>
+          )}
+        </div>
 
         {/* Hamburger - Always the only thing visible on mobile besides toggle */}
         <button

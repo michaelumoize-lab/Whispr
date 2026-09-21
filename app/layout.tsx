@@ -5,6 +5,7 @@ import { Outfit } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "react-hot-toast";
+import { PostHogProvider } from "./providers";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -27,12 +28,14 @@ export default function RootLayout({
       <body
         className={`${outfit.variable} antialiased min-h-screen bg-background text-foreground`}
       >
-        <Toaster />
-        <ThemeProvider>
-          <div className="overflow-x-hidden min-h-screen flex flex-col">
-            {children}
-          </div>
-        </ThemeProvider>
+        <PostHogProvider>
+          <Toaster />
+          <ThemeProvider>
+            <div className="overflow-x-hidden min-h-screen flex flex-col">
+              {children}
+            </div>
+          </ThemeProvider>
+        </PostHogProvider>
       </body>
     </html>
   );
